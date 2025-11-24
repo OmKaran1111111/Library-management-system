@@ -11,10 +11,8 @@ WelcomeMessage  BYTE "=================================================", 0Dh, 0
                 BYTE "||                                             ||", 0Dh, 0Ah
                 BYTE "=================================================", 0Dh, 0Ah, 0
     
-emptystring     BYTE " ",0
 ExitMessage     BYTE "Thank you for using the program. Goodbye!", 0
     
-
 UserTypePrompt       BYTE "1) Librarian 2) Customer 3) Exit Program: ", 0
     
 PasswordPrompt       BYTE "Enter Librarian Password: ", 0
@@ -22,7 +20,7 @@ PasswordFailMsg      BYTE "Incorrect Password! Access Denied.", 0
 LibrarianPassword    BYTE "password", 0
 InputPassword        BYTE 20 DUP(0)
 
-LibrarianOptions     BYTE "1) Add Book 2) Update Book Info 3) Display Library 4) Search Book 5) Register Student 6) Update Rent Limit 7) Log Out : ", 0
+LibrarianOptions     BYTE "1) Add Book 2) Update Book Info 3) Search Book 4) Register Student 5) Update Rent Limit 6) Log Out : ", 0
 CustomerOptions      BYTE "1) Return Book 2) Rent Book 3) Log Out: ", 0
 InvalidChoiceMessage BYTE "Invalid choice. Please enter a valid option.: ", 0
     
@@ -75,7 +73,7 @@ BookTitles   BYTE MAX_BOOKS * BookTitleSize DUP(0)
 BookAuthors  BYTE MAX_BOOKS * BookTitleSize DUP(0)
 BookISBNs    DWORD MAX_BOOKS DUP(?)
 Quantity     DWORD MAX_BOOKS DUP(?)
-    
+ 
 CurrentBookIndex DWORD 0 
 
 BookToRentTitle BYTE 50 DUP(0)
@@ -95,14 +93,13 @@ StudentRentCounts  DWORD MAX_STUDENTS DUP(0)
 .code
 main PROC
   
-mov edx, OFFSET WelcomeMessage
-call DisplayWelcomeMessage
-call Crlf
+    mov edx, OFFSET WelcomeMessage
+    call DisplayWelcomeMessage
+    call Crlf
    
-mov eax, 2000
-call Delay
-    
-call Clrscr
+    mov eax, 2000
+    call Delay
+    call Clrscr
 
 MainLoop:
     mov edx, OFFSET UserTypePrompt
@@ -119,7 +116,6 @@ MainLoop:
     call InvalidChoice
     jmp MainLoop
 
-
 CheckLibrarianAuth:
     call Crlf
     mov edx, OFFSET PasswordPrompt
@@ -127,7 +123,6 @@ CheckLibrarianAuth:
     mov edx, OFFSET InputPassword
     mov ecx, 19
     call ReadString
-        
 
     mov esi, OFFSET InputPassword
     mov edi, OFFSET LibrarianPassword
@@ -153,7 +148,6 @@ AuthFailed:
 AuthSuccess:
     jmp LibrarianMenuLabel
 
-
 LibrarianMenuLabel:
     call Crlf
     mov edx, OFFSET LibrarianOptions
@@ -166,17 +160,13 @@ LibrarianMenuLabel:
     cmp eax, 2
     je UpdateBookInfoJump
     cmp eax, 3
-    je DisplayLibraryJump
-    cmp eax, 4
     je DisplayBookInfoJump
-    cmp eax, 5
+    cmp eax, 4
     je RegisterStudentJump
-    cmp eax, 6
+    cmp eax, 5
     je UpdateRentLimitJump
-    cmp eax, 7
+    cmp eax, 6
     je MainLoop
-
-    
         
     call InvalidChoice
     jmp LibrarianMenuLabel
@@ -186,9 +176,6 @@ AddBookJump:
     jmp LibrarianMenuLabel
 UpdateBookInfoJump:
     call UpdateBookInfo
-    jmp LibrarianMenuLabel
-DisplayLibraryJump:
-    call displayLibraryInfo
     jmp LibrarianMenuLabel
 DisplayBookInfoJump:
     call DisplayBookInfo
@@ -241,11 +228,9 @@ main ENDP
 
 ;displayWelcomeMessage
 DisplayWelcomeMessage PROC
-mov eax, 0Ch
-call SetTextColor
-    
-mov esi, edx
-    
+    mov eax,red+yellow+blue
+    call SetTextColor
+    mov esi, edx
 PrintCharacterLoop:
     mov al, [esi]
     cmp al, 0
@@ -257,12 +242,11 @@ PrintCharacterLoop:
     pop eax
     inc esi
     jmp PrintCharacterLoop
-        
 DonePrinting:
-    mov eax, 07h
+    mov eax, white
     call SetTextColor
     ret
-    DisplayWelcomeMessage ENDP
+DisplayWelcomeMessage ENDP
 
 ;UpdateRentLimit
 UpdateRentLimit PROC
@@ -277,7 +261,6 @@ UpdateRentLimit PROC
     call WriteString
     call Crlf
     ret
-    
 LimitTooHigh:
     mov eax, 5
     mov RentLimit, eax
@@ -291,7 +274,6 @@ UpdateRentLimit ENDP
 RentBook PROC
     LOCAL targetISBN:DWORD, bookIdx:DWORD
     
-    call displayLibraryInfo
     call Crlf
     
     mov esi, CurrentCustomerIndex
@@ -314,7 +296,6 @@ RentBook PROC
     call ReadInt
     mov targetISBN, eax
     
-    mov eax, targetISBN
     call FindISBNIndex
     cmp eax, -1
     je RentNotFound
@@ -333,8 +314,7 @@ RentBook PROC
     add edi, eax
     mov esi, OFFSET BookToRentTitle
     
-    push ecx
-    mov ecx, 50
+
 CheckTitleLoop:
     mov al, [esi]
     mov bl, [edi]
@@ -345,7 +325,6 @@ CheckTitleLoop:
     inc esi
     inc edi
     loop CheckTitleLoop
-pop ecx
     
 TitleMatchOK:
     mov esi, bookIdx
@@ -387,36 +366,34 @@ TitleFail:
     mov edx, OFFSET TitleMismatchMsg
     call WriteString
     ret
-        
 RentNotFound:
     mov edx, OFFSET BookNotFound
     call WriteString
     ret
-        
 RentMaxReached:
     mov edx, OFFSET MaxBooksReachedMsg
     call WriteString
     ret
-        
 RentInsufficient:
     mov edx, OFFSET InsufficientCopiesMsg
     call WriteString
     ret
 RentBook ENDP
+
 ;returnbook
 ReturnBook PROC
-LOCAL returnISBN:DWORD, libIdx:DWORD
+    LOCAL returnISBN:DWORD
 
-mov edx, OFFSET ReturnEnterISBN
-call WriteString
-call ReadInt
-mov returnISBN, eax
-    
-mov eax, CurrentCustomerIndex
-mov ebx, MAX_RENT_PER_STUDENT
-mul ebx
-mov ecx, MAX_RENT_PER_STUDENT
-mov edi, 0
+    mov edx, OFFSET ReturnEnterISBN
+    call WriteString
+    call ReadInt
+    mov returnISBN, eax
+        
+    mov eax, CurrentCustomerIndex
+    mov ebx, MAX_RENT_PER_STUDENT
+    mul ebx
+    mov ecx, MAX_RENT_PER_STUDENT
+    mov edi, 0
     
 SearchUserRentals:
     mov ebx, eax
@@ -427,19 +404,17 @@ SearchUserRentals:
     inc edi
     loop SearchUserRentals
         
-mov edx, OFFSET NoBookRentedMsg
-call WriteString
-ret
+    mov edx, OFFSET NoBookRentedMsg
+    call WriteString
+    ret
     
 FoundInUserList:
     mov StudentRentals[ebx * 4], 0
-        
     mov esi, CurrentCustomerIndex
     dec StudentRentCounts[esi * 4]
         
     mov eax, returnISBN
     call FindISBNIndex
-    mov libIdx, eax
     inc Quantity[eax * 4]
         
     mov edx, OFFSET BookReturnMsg
@@ -492,7 +467,8 @@ AddBook PROC
     call Crlf
 AddBookExit:
     ret
-    AddBook ENDP
+AddBook ENDP
+
 ;findisbnindex
 FindISBNIndex PROC
     LOCAL OriginalISBN : DWORD
@@ -514,44 +490,8 @@ ISBNFound:
     mov eax, esi
     ret
 FindISBNIndex ENDP
-;displaylibraryinfo
-displayLibraryInfo PROC
-    mov ecx, CurrentBookIndex
-    cmp ecx, 0
-    je DisplayEmpty
-    mov esi, 0
-DisplayLoop:
-    call Crlf
-    mov edx, offset BookTitleMsg
-    call WriteString
-    mov eax, esi
-    mov ebx, 50
-    mul ebx
-    mov edx, offset BookTitles
-    add edx, eax
-    call WriteString
-    call Crlf
-        
-    mov edx, offset BookISBNPrompt
-    call WriteString
-    mov eax, BookISBNs[esi * 4]
-    call WriteInt
-    call Crlf
-        
-    mov edx, offset QuantityPrompt
-    call WriteString
-    mov eax, Quantity[esi * 4]
-    call WriteInt
-    call Crlf
-    inc esi
-    loop DisplayLoop
-    ret
-DisplayEmpty:
-    mov edx, offset BookNotFound
-    call WriteString
-    ret
-displayLibraryInfo ENDP
 
+;customerlogin
 CustomerLogin PROC
     mov edx, OFFSET CustomerIDPrompt
     call WriteString
@@ -578,6 +518,7 @@ LoginFound:
     mov eax, 1
     ret
 CustomerLogin ENDP
+
 ;register student
 RegisterStudent PROC
     cmp StudentCount, MAX_STUDENTS
@@ -626,6 +567,7 @@ RegFull:
     call WriteString
     ret
 RegisterStudent ENDP
+
 ;updatebookinfo
 UpdateBookInfo PROC
 UpdateMenu:
@@ -659,6 +601,7 @@ UpdateQuantityHandler:
     call UpdateBookQuantity
     ret
 UpdateBookInfo ENDP
+
 ;upgradebooktitle
 UpdateBookTitle PROC
     mov edx, offset BookISBNPrompt
@@ -682,6 +625,7 @@ UpdateBookTitle PROC
 UpdateExit: 
     ret
 UpdateBookTitle ENDP
+
 ;updateauthorname
 UpdateAuthorName PROC
     mov edx, offset BookISBNPrompt
@@ -705,6 +649,7 @@ UpdateAuthorName PROC
 UpdateExit2: 
     ret
 UpdateAuthorName ENDP
+
 ;updatebookquantity
 UpdateBookQuantity PROC
     mov edx, offset BookISBNPrompt
@@ -723,7 +668,8 @@ UpdateBookQuantity PROC
 UpdateExit3: 
     ret
 UpdateBookQuantity ENDP
-;displayboofinfo
+
+;displaybookinfo
 DisplayBookInfo PROC
     mov edx, offset BookISBNPrompt
     call WriteString
@@ -731,10 +677,13 @@ DisplayBookInfo PROC
     call FindISBNIndex
     cmp eax, -1
     je DisplayInfoNotFound
+    
     mov esi, eax
+
     call Crlf
     mov edx, offset BookTitleMsg
     call WriteString
+    
     mov eax, esi
     mov ebx, 50
     mul ebx
@@ -742,12 +691,25 @@ DisplayBookInfo PROC
     add edx, eax
     call WriteString
     call Crlf
+
+    mov edx, offset BookAuthorMsg
+    call WriteString
+    
+    mov eax, esi
+    mov ebx, 50   
+    mul ebx
+    mov edx, offset BookAuthors
+    add edx, eax
+    call WriteString
+    call Crlf
+
     mov edx, offset QuantityPrompt
     call WriteString
     mov eax, Quantity[esi * 4]
     call WriteInt
     call Crlf
     ret
+
 DisplayInfoNotFound:
     mov edx, offset BookNotFound
     call WriteString
