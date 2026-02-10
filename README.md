@@ -1,1 +1,1 @@
-# coal-lab-project
+# Library management system
