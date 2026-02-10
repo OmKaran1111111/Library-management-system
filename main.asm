@@ -7,7 +7,7 @@ WelcomeMessage  BYTE "=================================================", 0Dh, 0
                 BYTE "||                                             ||", 0Dh, 0Ah
                 BYTE "||            ~ DEVELOPED BY ~                 ||", 0Dh, 0Ah
                 BYTE "||           OM      (24k-0711)                ||", 0Dh, 0Ah
-                BYTE "||           BAHADUR (23k-0926)                ||", 0Dh, 0Ah
+                BYTE "||                                             ||", 0Dh, 0Ah
                 BYTE "||                                             ||", 0Dh, 0Ah
                 BYTE "=================================================", 0Dh, 0Ah, 0
     
@@ -724,3 +724,4 @@ InvalidChoice PROC
 InvalidChoice ENDP
 
 END main
+
